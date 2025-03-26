@@ -1,0 +1,25 @@
+# Maven target mappa
+target/
+
+# VSCode beállítások
+.vscode/
+
+# Eclipse és IntelliJ fájlok (ha más is használja majd)
+*.iml
+.idea/
+.classpath
+.project
+.settings/
+
+# Általános Java fájlok
+*.log
+*.class
+
+# OS-függő fájlok
+.DS_Store
+Thumbs.db
+
+# Teszt- vagy ideiglenes fájlok
+*.tmp
+*.bak
+*.txt
