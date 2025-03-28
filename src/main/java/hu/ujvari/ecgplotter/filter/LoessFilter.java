@@ -8,7 +8,7 @@ public class LoessFilter implements FilterInterface {
     private FilterParameters.LoessParameters parameters;
     
     public LoessFilter() {
-        // Alapértelmezett paraméterek
+        // Default parameters
         this(21, 2, 0.25);
     }
     
@@ -23,7 +23,7 @@ public class LoessFilter implements FilterInterface {
     
     @Override
     public List<Double> filter(List<Double> signal) {
-        // Teljes névvel hivatkozunk az eredeti osztályra az ütközés miatt
+        
         hu.ujvari.ecgprocessor.LoessFilter loessFilter = new hu.ujvari.ecgprocessor.LoessFilter(
             parameters.getWindowSize(),
             parameters.getPolynomialOrder(),

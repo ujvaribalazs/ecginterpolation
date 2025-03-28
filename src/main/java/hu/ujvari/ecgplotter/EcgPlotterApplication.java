@@ -56,13 +56,13 @@ public class EcgPlotterApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Ellenőrizzük a signal értékét
+        // Check the value of the signal
         System.out.println("EcgPlotterApplication.start: signal size = " + signal.size());
         
         // Initialize model
         signalData = new SignalData(signal);
         
-        // További védelem
+        // Additional protection
         if (signalData.getOriginalSignal().isEmpty()) {
             System.err.println("No signal data available!");
         }
@@ -85,7 +85,6 @@ public class EcgPlotterApplication extends Application {
         //filterController.registerFilter(waveletFilter);
     
                 
-        // A szegmentált adapter létrehozása és regisztrálása
         SegmentedFilterAdapter segmentedSgFilter = new SegmentedFilterAdapter(sgFilter, 0.7);
         // Explicitly set the original signal for all segmented filters
         segmentedSgFilter.setOriginalSignal(signalData.getOriginalSignal());
@@ -117,7 +116,7 @@ public class EcgPlotterApplication extends Application {
         
         // Initialize UI components
         signalCanvas = new SignalCanvas(900, 450);
-        signalCanvas.setSignalData(signalData);  // Ez NAGYON FONTOS!
+        signalCanvas.setSignalData(signalData); 
         
         statusPanel = new StatusPanel();
         navigationPanel = new NavigationPanel(signalData);
@@ -141,7 +140,7 @@ public class EcgPlotterApplication extends Application {
         viewController.setNavigationPanel(navigationPanel);
         viewController.setStatusPanel(statusPanel);
     
-        // Állítsuk be a signalCanvas FilterController-jét
+        // Set the FilterController of signalCanvas
         signalCanvas.setFilterController(filterController);
             
         // Setup canvas events
@@ -176,7 +175,7 @@ public class EcgPlotterApplication extends Application {
     private void processData() {
         statusPanel.updateStatus("Processing data...", 0);
         
-        // Biztosítsuk, hogy a filterController rendelkezik a signalData-val
+        // Ensure that the filterController has the signalData
         filterController.setSignalData(signalData);
         
         // Check if data is available

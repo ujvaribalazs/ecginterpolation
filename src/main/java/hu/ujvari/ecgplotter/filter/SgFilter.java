@@ -3,8 +3,7 @@ package hu.ujvari.ecgplotter.filter;
 import java.util.List;
 
 import hu.ujvari.ecgplotter.model.FilterParameters;
-import hu.ujvari.ecgprocessor.SavitzkyGolayFilter;  // Importáljuk az eredeti filter osztályt
-
+import hu.ujvari.ecgprocessor.SavitzkyGolayFilter;
 public class SgFilter implements FilterInterface {
     private FilterParameters.SavitzkyGolayParameters parameters;
     
@@ -19,7 +18,7 @@ public class SgFilter implements FilterInterface {
     
     @Override
     public List<Double> filter(List<Double> signal) {
-        // Az eredeti SavitzkyGolayFilter osztályt használjuk, nem újra a saját SgFilter osztályunkat
+        // We use the original SavitzkyGolayFilter class
         SavitzkyGolayFilter sgFilter = new SavitzkyGolayFilter(
             parameters.getWindowSize(), 
             parameters.getPolynomialOrder()

@@ -21,16 +21,14 @@ public class FilterController {
     private Map<String, FilterInterface> filters = new HashMap<>();
     private final Executor executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     
-    // 1) Dependency-mappa:
+    // 1) Dependency map:
     private Map<String, List<String>> dependencies = new HashMap<>();
     
     public FilterController(SignalData signalData) {
         this.signalData = signalData;
     }
     
-    // Add this method to your FilterController class
-
-    public void setSignalData(SignalData signalData) {
+   public void setSignalData(SignalData signalData) {
         this.signalData = signalData;
         
         // Update all segmented filters with the new original signal
@@ -47,8 +45,8 @@ public class FilterController {
     }
     
     /** 
-     * Ezzel adunk hozzá: "baseFilterName" -> "dependentFilterName". 
-     * Ha a dependent filter a base-re épül, a base lefutása után automatikusan fusson a dependent is.
+     * Adds a dependency: "baseFilterName" -> "dependentFilterName".  
+     * If the dependent filter is based on the base filter, it will automatically run after the base has finished.
      */
     public void addDependency(String baseFilterName, String dependentFilterName) {
         dependencies.computeIfAbsent(baseFilterName, k -> new ArrayList<>())
@@ -78,8 +76,8 @@ public class FilterController {
     }
     
     /**
-     * Egyszeri filter futtatás 
-     * majd rekurzív (lánc) futtatás a függő filtereken is. 
+     * Runs a single filter,  
+     * then recursively (chained) runs its dependent filters as well.
      */
     public CompletableFuture<Void> applyFilter(String filterName) {
         FilterInterface filter = filters.get(filterName);
@@ -101,54 +99,54 @@ public class FilterController {
         
         LOGGER.info("Applying filter: " + filterName);
         
-        // A módosítás itt kezdődik - ellenőrizzük, hogy SegmentedFilterAdapter-e
+        
         if (filter instanceof SegmentedFilterAdapter) {
             SegmentedFilterAdapter segmentedFilter = (SegmentedFilterAdapter) filter;
             
-            // Ha szegmentált filter, akkor frissítjük az alapszűrő paramétereit
+            // If segmented filter, update its base filter parameters
             FilterInterface baseFilter = segmentedFilter.getBaseFilter();
             String baseFilterName = baseFilter.getName();
             FilterInterface registeredBaseFilter = filters.get(baseFilterName);
             
             if (registeredBaseFilter != null) {
-                // Átvesszük a regisztrált alapszűrő paramétereit
+                // Use the registered base filter's parameters
                 FilterParameters baseParams = registeredBaseFilter.getParameters();
                 
-                // Frissítjük a szegmentált szűrő paramétereiben az alapszűrő paramétereit
+                // Update base parameters in the segmented filter's own parameters
                 FilterParameters.SegmentFilterParameters segParams = 
                     (FilterParameters.SegmentFilterParameters) segmentedFilter.getParameters();
                 segParams.setBaseFilterParameters(baseParams);
                 
-                // Beállítjuk a frissített paramétereket a szegmentált szűrőnek
+                // Apply updated parameters to segmented filter
                 segmentedFilter.setParameters(segParams);
                 
                 LOGGER.info("Updated segmented filter '" + filterName + 
                         "' with base filter '" + baseFilterName + "' parameters");
             }
         }
-        // A módosítás vége
+       
         
-        // FUTTATÁS -> THEN COMPOSE
+        // RUN -> THEN COMPOSE
         return CompletableFuture.supplyAsync(() -> {
-            // 1) Maga a filterelés
+            // 1) Perform filtering
             List<Double> filtered = filter.filter(originalSignal);
             return filtered;
         }, executor).thenCompose(filtered -> {
-            // 2) Filterelt jel eltárolása
+            // 2) Store the filtered signal
             signalData.addFilteredSignal(filterName, filtered);
             LOGGER.info("Filter applied: " + filterName);
             
-            // 3) Függő filterek (dependensek) futtatása rekurzívan
+            // 3) Run dependent filters recursively
             return applyDependentFilters(filterName);
         });
     }
         
     private CompletableFuture<Void> applyDependentFilters(String filterName) {
-        // Megnézzük, hogy van-e "dependens" filter, pl. "SegmentedSavitzkyGolay" 
-        // a "SavitzkyGolay" után
+        // Check if there are any dependent filters, e.g., "SegmentedSavitzkyGolay" 
+        // that should run after "SavitzkyGolay"
         List<String> dependents = dependencies.getOrDefault(filterName, Collections.emptyList());
         
-        // Sorban futtatjuk a függő filtereket (chain-elve a CompletableFuture-öket)
+        // Run dependent filters in sequence (chain CompletableFutures)
         CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
         for (String dependentName : dependents) {
             chain = chain.thenCompose(v -> applyFilter(dependentName));
@@ -162,15 +160,11 @@ public class FilterController {
             return CompletableFuture.completedFuture(null);
         }
         
-        // Minden filtert futtatunk (közöttük a dependencies logika is érvényes lesz)
+        // Apply all filters (dependency logic will also be respected)
         CompletableFuture<Void>[] futures = filters.keySet().stream()
             .map(this::applyFilter)
             .toArray(CompletableFuture[]::new);
         
         return CompletableFuture.allOf(futures);
     }
-
-   
-
-    
 }

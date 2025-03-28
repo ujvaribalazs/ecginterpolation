@@ -25,10 +25,10 @@ public class ViewController {
         filterVisibility.put("Original", true);
         filterVisibility.put("Gaussian", false);
         filterVisibility.put("SavitzkyGolay", false);
-        filterVisibility.put("LOESS", false);
+        filterVisibility.put("Loess", false);
         filterVisibility.put("Spline", false);
         //filterVisibility.put("Wavelet", false);
-        filterVisibility.put("SegmentedSavitzkyGolay", false); // vagy true
+        filterVisibility.put("SegmentedSavitzkyGolay", false);
         filterVisibility.put("SegmentedLoess", false);
         filterVisibility.put("SegmentedSpline", false);
     }

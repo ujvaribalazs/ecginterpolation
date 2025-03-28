@@ -25,10 +25,9 @@ public class SignalCanvas extends Canvas {
         
         
         // Default colors
-        filterColors.put("Original", Color.color(0.8, 0.8, 0.8, 0.7)); // Világosszürke, 30% átlátszóság
-        filterColors.put("Gaussian", Color.BLUE);
+        filterColors.put("Original", Color.color(0.8, 0.8, 0.8, 0.7));
         filterColors.put("SavitzkyGolay", Color.RED);
-        filterColors.put("LOESS", Color.CORAL);
+        filterColors.put("Loess", Color.CORAL);
         filterColors.put("Spline", Color.PURPLE);
         filterColors.put("Wavelet", Color.ORANGE);
         filterColors.put("SegmentedSavitzkyGolay", Color.YELLOWGREEN);
@@ -40,7 +39,7 @@ public class SignalCanvas extends Canvas {
         visibleFilters.put("Original", true);
         visibleFilters.put("Gaussian", true);
         visibleFilters.put("SavitzkyGolay", true);
-        visibleFilters.put("LOESS", false);
+        visibleFilters.put("Loess", false);
         visibleFilters.put("Spline", false);
         visibleFilters.put("Wavelet", false);
         visibleFilters.put("SegmentedSavitzkyGolay", true);
@@ -141,7 +140,7 @@ public class SignalCanvas extends Canvas {
             if (visibleFilters.getOrDefault(filterName, false)) {
                 drawSignal(filterName, filteredSignal, skipFactor, padding, height, xScale, yScale);
                 
-                // Ha ez egy szegmentált szűrő és van FilterController, rajzold ki az R csúcsokat is
+                // If it's a segmented filter and you have FilterController, draw the R vertices too
                 if (filterName.startsWith("Segmented") && filterController != null) {
                     hu.ujvari.ecgplotter.filter.FilterInterface filter = filterController.getFilter(filterName);
                     if (filter instanceof hu.ujvari.ecgplotter.filter.SegmentedFilterAdapter) {
@@ -217,32 +216,13 @@ public class SignalCanvas extends Canvas {
                 double x = padding + (peakIdx - signalData.getViewStartIdx()) * xScale;
                 double y = height - padding - (signal.get(peakIdx) - signalData.getMinValue()) * yScale;
                 
-                // Rajzolás: kis kör az R csúcsnál
+                // Drawing: small circle at the R peak
                 gc.strokeOval(x - 1, y - 1, 2, 2);
             }
         }
     }
 
-    // Segédfüggvények a koordináták kiszámolásához - ezek már létezhetnek
-    private double calculateXCoordinate(int index) {
-        // Ez a metódus átalakítja a jel indexét vászon X koordinátává
-        int viewStart = signalData.getViewStartIdx();
-        int viewEnd = signalData.getViewEndIdx();
-        double canvasWidth = getWidth();
-        
-        return (index - viewStart) * canvasWidth / (viewEnd - viewStart);
-    }
-
-    private double calculateYCoordinate(double value) {
-        // Ez a metódus átalakítja a jel értékét vászon Y koordinátává
-        double minVal = signalData.getMinValue();
-        double maxVal = signalData.getMaxValue();
-        double canvasHeight = getHeight();
-        
-        // Fordított Y tengely (felül 0, alul canvasHeight)
-        return canvasHeight - (value - minVal) * canvasHeight / (maxVal - minVal);
-    }
-        
+    
     // Setup event handlers for panning and zooming
     public void setupCanvasEvents() {
         final double[] lastX = {0};

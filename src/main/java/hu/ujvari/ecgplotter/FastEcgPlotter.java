@@ -92,8 +92,8 @@ public class FastEcgPlotter extends Application {
                     // LineChart létrehozása
                     final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
                     lineChart.setTitle("ECG Jel (Csak eredeti)");
-                    lineChart.setCreateSymbols(false); // ne jelenjenek meg a pontok
-                    lineChart.setAnimated(false); // animáció kikapcsolása a jobb teljesítményért
+                    lineChart.setCreateSymbols(false); 
+                    lineChart.setAnimated(false); 
                     
                     // Adatsorozat létrehozása
                     XYChart.Series<Number, Number> originalSeries = new XYChart.Series<>();
@@ -187,8 +187,8 @@ public class FastEcgPlotter extends Application {
                     // LineChart létrehozása
                     final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
                     lineChart.setTitle("ECG Jelek Összehasonlítása");
-                    lineChart.setCreateSymbols(false); // ne jelenjenek meg a pontok
-                    lineChart.setAnimated(false); // animáció kikapcsolása a jobb teljesítményért
+                    lineChart.setCreateSymbols(false); 
+                    lineChart.setAnimated(false); 
                     
                     updateStatus("Eredeti jel előkészítése...", 0.1);
                     
@@ -287,7 +287,7 @@ public class FastEcgPlotter extends Application {
         });
     }
     
-    // Főprogram indításához
+   
     public static void main(String[] args) {
         launch(args);
     }

@@ -113,7 +113,7 @@ public class EcgPlotter extends Application {
 
         lineChart.getData().clear();
 
-        // Szűrt vagy eredeti (ha "Eredeti jel" van kiválasztva)
+        // Szűrt vagy eredeti 
         XYChart.Series<Number, Number> mainSeries = new XYChart.Series<>();
         mainSeries.setName(selectedFilter);
 

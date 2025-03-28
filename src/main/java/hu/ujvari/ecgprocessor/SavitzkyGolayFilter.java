@@ -42,7 +42,7 @@ public class SavitzkyGolayFilter {
         return output;
     }
 
-    // 🔍 Súlyok számítása: S-G súlyok középső pontra
+    // 🔍 Calculation of weights: S-G weights for the centre point
     private double[] computeSGCoefficients(int windowSize, int polyOrder) {
         int half = windowSize / 2;
         double[][] A = new double[windowSize][polyOrder + 1];
@@ -57,11 +57,11 @@ public class SavitzkyGolayFilter {
         double[][] ATAinv = invert(ATA);
         double[][] pseudoInverse = multiply(ATAinv, transpose(A));
 
-        // Válasszuk ki a középső sor (konvolúciós súlyok középső pont számára)
+        // Select the middle row (convolution weights for middle point)
         return pseudoInverse[0];
     }
 
-    // 🔧 Mátrixműveletek
+    // 🔧 Matrix operations
     private double[][] transpose(double[][] m) {
         int rows = m.length, cols = m[0].length;
         double[][] result = new double[cols][rows];
@@ -92,7 +92,7 @@ public class SavitzkyGolayFilter {
             inv[i][i] = 1.0;
         }
 
-        // Gauss-Jordan elimináció
+        // Gauss-Jordan elimination
         for (int i = 0; i < n; i++) {
             double pivot = a[i][i];
             if (pivot == 0) throw new RuntimeException("Nem invertálható mátrix.");

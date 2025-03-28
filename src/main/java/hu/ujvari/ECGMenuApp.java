@@ -25,35 +25,35 @@ public class ECGMenuApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        primaryStage.setTitle("ECG Alkalmazás Menü");
+        primaryStage.setTitle("ECG Application Menu");
 
-        // Menü létrehozása
+        // Create menu
         showMainMenu();
     }
 
     private void showMainMenu() {
-        // Címke létrehozása
-        Label titleLabel = new Label("Válassz egy alkalmazást:");
+        // Create label
+        Label titleLabel = new Label("Choose an application:");
         titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        // Gombok létrehozása
-        Button ecgPlotterButton = new Button("ECG Megjelenítő");
-        Button xmlAnalyzerButton = new Button("XML Elemző");
-        Button exitButton = new Button("Kilépés");
+        // Create buttons
+        Button ecgPlotterButton = new Button("ECG Viewer");
+        Button xmlAnalyzerButton = new Button("XML Analyzer");
+        Button exitButton = new Button("Exit");
 
-        // Gombok méretezése
+        // Button sizing
         ecgPlotterButton.setPrefWidth(200);
         xmlAnalyzerButton.setPrefWidth(200);
         exitButton.setPrefWidth(200);
 
-        // Gombok eseménykezelőinek beállítása
+        // Set button actions
         ecgPlotterButton.setOnAction(e -> {
             primaryStage.hide();
             startEcgPlotter();
         });
 
         xmlAnalyzerButton.setOnAction(e -> {
-            // XML elemző almenü megjelenítése
+            // Show XML analysis submenu
             showXmlAnalyzerMenu();
         });
 
@@ -61,29 +61,29 @@ public class ECGMenuApp extends Application {
             Platform.exit();
         });
 
-        // Layout létrehozása
+        // Layout setup
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
         layout.getChildren().addAll(titleLabel, ecgPlotterButton, xmlAnalyzerButton, exitButton);
 
-        // Jelenet beállítása
+        // Set scene
         Scene scene = new Scene(layout, 300, 250);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     private void showXmlAnalyzerMenu() {
-        // Almenü létrehozása az XML elemzőhöz
+        // Create submenu for XML analysis
         Stage xmlMenu = new Stage();
-        xmlMenu.setTitle("XML Elemző Menü");
+        xmlMenu.setTitle("XML Analyzer Menu");
 
-        Label titleLabel = new Label("Válassz egy XML elemzési opciót:");
+        Label titleLabel = new Label("Choose an XML analysis option:");
         titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
-        Button availableLeadsButton = new Button("Elérhető Elvezetések Listázása");
-        Button xmlStructureButton = new Button("XML Struktúra Megjelenítése");
-        Button backButton = new Button("Vissza a Főmenübe");
+        Button availableLeadsButton = new Button("List Available Leads");
+        Button xmlStructureButton = new Button("Display XML Structure");
+        Button backButton = new Button("Back to Main Menu");
 
         availableLeadsButton.setPrefWidth(250);
         xmlStructureButton.setPrefWidth(250);
@@ -116,34 +116,29 @@ public class ECGMenuApp extends Application {
         xmlMenu.show();
     }
 
-    // ECG Megjelenítő indítása
     private void startEcgPlotter() {
         try {
             XmlEcgReader reader = new XmlEcgReader();
             
-            // Példa fájl betöltése fájlrendszerből
             reader.loadFromResource("xml/ecg1.xml");
-            // A jelek kinyerése az XML-ből
+            
             reader.extractSignals();
             
-            // Ha van legalább egy jel, adjuk át a plotternek
             if (!reader.getSignals().isEmpty()) {
                 Signal mDC_ECG_LEAD_I = reader.getSignals().get(4);
                 List<Double> values = mDC_ECG_LEAD_I.getValues();
                 System.out.println("ECGMenuApp: values size = " + (values != null ? values.size() : "null"));
                 EcgPlotterApplication.setData(values);
-                //EcgPlotterApplication.setData(mDC_ECG_LEAD_I.getValues());
+                
             } else {
-                System.out.println("Nem található elvezetés az XML-ben.");
+                System.out.println("No lead found in XML.");
                 return;
             }
             
-            // ECG Plotter indítása
             EcgPlotterApplication plotter = new EcgPlotterApplication();
             Stage stage = new Stage();
             plotter.start(stage);
             
-            // Ha bezárjuk a plottert, visszatérünk a főmenühöz
             stage.setOnHidden(e -> primaryStage.show());
             
         } catch (Exception e) {
@@ -152,22 +147,22 @@ public class ECGMenuApp extends Application {
         }
     }
 
-    // XML Elemző indítása
+    // Starts the XML Analyzer
     private void startXmlAnalyzer(boolean showLeads, boolean showStructure) {
         XmlEcgReader reader = new XmlEcgReader();
         
-        // Példa fájl betöltése fájlrendszerből
+        // Load sample file from resources
         reader.loadFromResource("xml/ecg1.xml");
-        // A jelek kinyerése az XML-ből
+        // Extract signals from the XML
         reader.extractSignals();
         
-        // Kimenet elfogása (capture output)
+        // Capture output
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
         PrintStream old = System.out;
         System.setOut(ps);
         
-        // Funkciók meghívása a paraméterek alapján
+        // Call functions based on parameters
         if (showLeads) {
             reader.printAvailableLeads();
         }
@@ -175,14 +170,14 @@ public class ECGMenuApp extends Application {
             reader.printXmlStructure();
         }
         
-        // Visszaállítás és kimenet kinyerése
+        // Restore output and retrieve content
         System.out.flush();
         System.setOut(old);
         String output = baos.toString();
         
-        // Új ablak létrehozása az XML struktúra megjelenítéséhez
+        // Create a new window to display XML structure
         Stage xmlStage = new Stage();
-        xmlStage.setTitle(showLeads ? "Elérhető Elvezetések" : "XML Struktúra");
+        xmlStage.setTitle(showLeads ? "Available Leads" : "XML Structure");
         
         TextArea xmlContentText = new TextArea(output);
         xmlContentText.setEditable(false);
@@ -190,7 +185,7 @@ public class ECGMenuApp extends Application {
         xmlContentText.setPrefHeight(500);
         xmlContentText.setStyle("-fx-font-family: monospace;");
         
-        Button closeButton = new Button("Bezárás");
+        Button closeButton = new Button("Close");
         closeButton.setOnAction(e -> xmlStage.close());
         
         VBox xmlLayout = new VBox(10);

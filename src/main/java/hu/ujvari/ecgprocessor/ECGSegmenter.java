@@ -5,30 +5,25 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Segédosztály az EKG jel szegmentálására R hullámok alapján
+ * Utility class for segmentation of ECG signal based on R waves
  */
 public class ECGSegmenter {
-    // Konfigurációs konstans a simítási átmenet szélességére
-    private static final int DEFAULT_TRANSITION_WIDTH = 35; // Szélesebb alapértelmezett átmenet
-    /**
-     * R csúcsokat detektál a jelben ablakozással
-     * @param signal Az EKG jel
-     * @param threshold Küszöbérték az R csúcsok detektálásához
-     * @return A detektált R csúcsok indexeinek listája
-     */
+    // Configuration constant for the width of the smoothing transition
+    private static final int DEFAULT_TRANSITION_WIDTH = 35; // Wider default transition
+
     public static List<Integer> detectRPeaks(List<Double> signal, double threshold) {
         List<Integer> peaks = new ArrayList<>();
         System.out.println("[DEBUG] R peak detection called. Threshold: " + threshold);
-        // 1000 Hz mintavételezésnél egy 60-100 bpm szívfrekvenciának megfelelő ablak
-        int windowSize = 400;  // 400 ms egy ablak
-        int stepSize = 200;    // 200 ms lépésköz (50% átfedés)
         
+        // At 1000 Hz sampling rate, this corresponds to 60-100 bpm heart rate window
+        int windowSize = 400;  // 400 ms window
+        int stepSize = 200;    // 200 ms step size (50% overlap)
         
-        // Menjünk végig a jelen ablakozva
+        // Sliding window through the signal
         for (int startIdx = 0; startIdx < signal.size() - windowSize/2; startIdx += stepSize) {
             int endIdx = Math.min(startIdx + windowSize, signal.size());
             
-            // Keressük meg a legnagyobb értéket az ablakban
+            // Find the maximum value in the current window
             int maxIdx = startIdx;
             double maxVal = signal.get(startIdx);
             
@@ -39,15 +34,15 @@ public class ECGSegmenter {
                 }
             }
             
-            // Ha a maximum értéke nagyobb, mint a küszöbérték, akkor ez egy csúcs
+            // If the max value exceeds the threshold, consider it a peak
             if (maxVal > threshold) {
-                // Finomítsuk a csúcs pozícióját, ellenőrizve a lokális környezetet
+                // Refine the peak position by checking local neighborhood
                 int refinedPeakIdx = refineRPeakPosition(signal, maxIdx);
                 
-                // Ellenőrizzük, hogy ez a csúcs nincs-e már a listában vagy annak közelében
+                // Check if this peak is already present or too close to an existing one
                 boolean isNewPeak = true;
                 for (int existingPeak : peaks) {
-                    if (Math.abs(existingPeak - refinedPeakIdx) < 100) { // 100 ms minimális távolság
+                    if (Math.abs(existingPeak - refinedPeakIdx) < 100) { // minimum 100 ms apart
                         isNewPeak = false;
                         break;
                     }
@@ -59,15 +54,15 @@ public class ECGSegmenter {
             }
         }
         
-        // Rendezzük a csúcsokat növekvő sorrendbe
+        // Sort the peaks in ascending order
         peaks.sort(Integer::compareTo);
         
         return peaks;
     }
 
-    // Segédmetódus a csúcs pozíciójának finomításához
+    // Helper method for refining the detected peak position
     private static int refineRPeakPosition(List<Double> signal, int approximatePeakIdx) {
-        // Kis ablak a pontos csúcs meghatározásához
+        // Small window around the detected peak
         int refineWindow = 30; // ±30 ms
         int startIdx = Math.max(0, approximatePeakIdx - refineWindow);
         int endIdx = Math.min(signal.size() - 1, approximatePeakIdx + refineWindow);
@@ -75,7 +70,7 @@ public class ECGSegmenter {
         int maxIdx = approximatePeakIdx;
         double maxVal = signal.get(approximatePeakIdx);
         
-        // Keressük meg a valódi lokális maximumot
+        // Search for local maximum
         for (int i = startIdx; i <= endIdx; i++) {
             if (signal.get(i) > maxVal) {
                 maxVal = signal.get(i);
@@ -83,7 +78,7 @@ public class ECGSegmenter {
             }
         }
         
-        // Ellenőrizzük, hogy valóban lokális maximum-e
+        // Verify that it is truly a local maximum
         boolean isLocalMax = true;
         if (maxIdx > 0 && signal.get(maxIdx) <= signal.get(maxIdx - 1)) {
             isLocalMax = false;
@@ -96,48 +91,43 @@ public class ECGSegmenter {
     }
     
     /**
-     * Egy szűrőt alkalmaz szegmentáltan az EKG jelre, megőrizve az R csúcsokat
-     * @param signal Az eredeti EKG jel
-     * @param filter A használandó szűrő funkció
-     * @param rPeakThreshold Küszöbérték az R csúcsok detektálásához
-     * @return A szegmentáltan szűrt jel
+     * Applies a filter segment-wise to the ECG signal while preserving the R peaks
+     * @param signal The original ECG signal
+     * @param filter The filter function to be applied
+     * @param rPeakThreshold Threshold for R peak detection
+     * @return The filtered signal and list of detected R peak indices
      */
     public static SegmentationResult applyFilterBySegments(List<Double> signal, FilterFunction filter, double rPeakThreshold) {
-        // R csúcsok detektálása
+        // Detect R peaks
         List<Integer> rPeakIndices = detectRPeaks(signal, rPeakThreshold);
         
-        // Eredmény előkészítése
+        // Prepare result container
         List<Double> result = new ArrayList<>();
         
-        // Ha nincsenek detektált R csúcsok, alkalmazzuk a szűrőt a teljes jelre
+        // If no peaks detected, apply the filter to the entire signal
         if (rPeakIndices.isEmpty()) {
             return new SegmentationResult(filter.apply(signal), rPeakIndices);
         }
-        
-              
-        
-        // Első szakasz: 0-tól az első csúcsig
+
+        // First segment: from 0 to the first peak
         int prevIdx = 0;
         for (int i = 0; i < rPeakIndices.size(); i++) {
             int currIdx = rPeakIndices.get(i);
-            
-            
 
-            // Kivágjuk az adott szakaszt
+            // Cut out the current segment
             List<Double> segment = signal.subList(prevIdx, currIdx);
             System.out.println("[DEBUG] Segment " + i + ": " + segment.size() + " samples, from " + prevIdx + " to " + currIdx);
 
-
-            // Alkalmazzuk a szűrőt
+            // Apply the filter
             List<Double> filteredSegment = filter.apply(segment);
 
-            // Hozzáadjuk a szűrt szakaszt az eredményhez
+            // Add the filtered segment to the result
             result.addAll(filteredSegment);
 
             prevIdx = currIdx;
         }
 
-        // Utolsó szakasz: az utolsó csúcstól a végéig
+        // Last segment: from last peak to the end
         if (prevIdx < signal.size()) {
             List<Double> segment = signal.subList(prevIdx, signal.size());
             List<Double> filteredSegment = filter.apply(segment);
@@ -151,9 +141,8 @@ public class ECGSegmenter {
         List<Double> signal,
         FilterFunction filter,
         List<Integer> rPeakIndices
-        
     ) {
-        // Ha nincsenek detektált R csúcsok, alkalmazzuk a szűrőt a teljes jelre
+        // If no peaks are given, apply the filter to the entire signal
         if (rPeakIndices == null || rPeakIndices.isEmpty()) {
             return new SegmentationResult(filter.apply(signal), new ArrayList<>());
         }
@@ -161,114 +150,99 @@ public class ECGSegmenter {
         List<Double> result = new ArrayList<>(signal.size());
         List<Integer> newPeakIndices = new ArrayList<>();
         
-        System.out.println("[DEBUG] Alkalmazunk szegmentált szűrést " + rPeakIndices.size() + " R csúccsal");
-        
-        // Az átmeneti zóna szélessége (minták száma)
+        System.out.println("[DEBUG] Performing segmented filtering with " + rPeakIndices.size() + " R peaks");
+
         int transitionZone = DEFAULT_TRANSITION_WIDTH;
-        
-        // Rendezzük a csúcsokat, hogy biztosan növekvő sorrendben legyenek
+
         List<Integer> sortedPeaks = new ArrayList<>(rPeakIndices);
         Collections.sort(sortedPeaks);
-        
-        // Ellenőrzés: minden csúcs a jel tartományán belül van?
+
+        // Ensure all peaks are within the signal boundaries
         sortedPeaks.removeIf(idx -> idx < 0 || idx >= signal.size());
-        
-        // Előre betöltjük a jelet egy új listába, amit módosítani fogunk
+
+        // Create a copy of the signal to be modified
         List<Double> modifiedSignal = new ArrayList<>(signal);
-        
-        // Szegmensenként szűrjük a jelet
+
+        // Filter the signal segment by segment
         int prevIdx = 0;
         for (int i = 0; i < sortedPeaks.size(); i++) {
             int peakIdx = sortedPeaks.get(i);
             
-            // Ellenőrizzük, hogy az index érvényes-e
             if (peakIdx >= signal.size()) {
-                System.out.println("[WARNING] R csúcs index (" + peakIdx + ") nagyobb, mint a jel hossza (" + signal.size() + ")");
+                System.out.println("[WARNING] R peak index (" + peakIdx + ") exceeds signal length (" + signal.size() + ")");
                 continue;
             }
-            
-            // Szűrjük a szakaszt a csúcs előtt
+
+            // Filter the segment before the peak
             if (peakIdx > prevIdx) {
                 List<Double> segment = signal.subList(prevIdx, peakIdx);
                 List<Double> filteredSegment = filter.apply(segment);
-                
-                // Másoljuk a szűrt eredményt a módosított jelbe
+
                 for (int j = 0; j < filteredSegment.size(); j++) {
                     int signalIdx = prevIdx + j;
                     modifiedSignal.set(signalIdx, filteredSegment.get(j));
                 }
             }
-            
-            // A csúcs értékét érintetlenül hagyjuk
-            
-            // A következő szakasz a csúcs utáni indextől kezdődik
+
+            // The peak value itself remains unchanged
             prevIdx = peakIdx + 1;
         }
-        
-        // Utolsó szakasz: az utolsó csúcstól a végéig
+
+        // Last segment: from last peak to the end
         if (prevIdx < signal.size()) {
             List<Double> segment = signal.subList(prevIdx, signal.size());
             List<Double> filteredSegment = filter.apply(segment);
-            
-            // Másoljuk a szűrt eredményt a módosított jelbe
+
             for (int j = 0; j < filteredSegment.size(); j++) {
                 int signalIdx = prevIdx + j;
                 modifiedSignal.set(signalIdx, filteredSegment.get(j));
             }
         }
-        
-        // Most létrehozzuk a sima átmeneteket az R csúcsok körül
+
+        // Smooth transitions around R peaks
         for (int peakIdx : sortedPeaks) {
-            // A csúcs előtti átmeneti zóna
+            // Transition zone before the peak
             int beforeStart = Math.max(0, peakIdx - transitionZone);
             for (int i = beforeStart; i < peakIdx; i++) {
-                // Lineáris interpoláció az átmeneti zónában
                 double weight = (double)(i - beforeStart) / (peakIdx - beforeStart);
                 double filteredValue = modifiedSignal.get(i);
                 double peakValue = signal.get(peakIdx);
-                // Simább átmenet a szűrt érték és a csúcsérték között
                 modifiedSignal.set(i, filteredValue * (1 - weight) + peakValue * weight);
             }
-            
-            // A csúcs utáni átmeneti zóna
+
+            // Transition zone after the peak
             int afterEnd = Math.min(signal.size() - 1, peakIdx + transitionZone);
             for (int i = peakIdx + 1; i <= afterEnd; i++) {
-                // Lineáris interpoláció az átmeneti zónában
                 double weight = (double)(afterEnd - i) / (afterEnd - peakIdx);
                 double filteredValue = modifiedSignal.get(i);
                 double peakValue = signal.get(peakIdx);
-                // Simább átmenet a csúcsérték és a szűrt érték között
                 modifiedSignal.set(i, filteredValue * (1 - weight) + peakValue * weight);
             }
         }
-        
-        // Az eredmény a módosított jel
+
         result = modifiedSignal;
-        
-        // A csúcsok indexei ugyanazok maradnak
         newPeakIndices = sortedPeaks;
-        
-        System.out.println("[DEBUG] Eredeti jel hossza: " + signal.size() + ", Szűrt jel hossza: " + result.size());
-        
+
+        System.out.println("[DEBUG] Original signal length: " + signal.size() + ", Filtered signal length: " + result.size());
+
         return new SegmentationResult(result, newPeakIndices);
     }
 
-    
     public static class SegmentationResult {
         private List<Double> filteredSignal;
         private List<Integer> rPeakIndices;
-        
+
         public SegmentationResult(List<Double> filteredSignal, List<Integer> rPeakIndices) {
             this.filteredSignal = filteredSignal;
             this.rPeakIndices = rPeakIndices;
         }
-        
+
         public List<Double> getFilteredSignal() { return filteredSignal; }
         public List<Integer> getRPeakIndices() { return rPeakIndices; }
     }
-    
+
     /**
-     * Funkcionális interfész a különböző szűrők használatához
+     * Functional interface for applying custom filters to a signal
      */
     @FunctionalInterface
     public interface FilterFunction {

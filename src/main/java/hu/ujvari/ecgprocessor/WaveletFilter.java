@@ -5,97 +5,96 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Wavelet alapú szűrő
- * Diszkrét wavelet transzformációt használ a jel dekompozíciójához és rekonstrukciójához
-**/
-
+ * Wavelet-based filter  
+ * Uses discrete wavelet transform for signal decomposition and reconstruction
+ **/
 public class WaveletFilter {
-    private int level;          // A dekompozíció szintje
-    private double threshold;   // A küszöbölési érték
-    
+    private int level;          // Decomposition level
+    private double threshold;   // Threshold value
+
     /**
-     * Wavelet szűrő inicializálása
-     * @param level A dekompozíció szintje
-     * @param threshold A küszöbölési érték a zaj eltávolításához
+     * Initializes the wavelet filter
+     * @param level The decomposition level
+     * @param threshold The threshold value used for noise removal
      */
     public WaveletFilter(int level, double threshold) {
         this.level = level;
         this.threshold = threshold;
     }
-    
+
     /**
-     * Alkalmazzon wavelet szűrést a bemeneti jelre
-     * @param inputSignal A bemeneti jel
-     * @return A szűrt jel
+     * Applies wavelet filtering to the input signal
+     * @param inputSignal The input signal
+     * @return The filtered signal
      */
     public List<Double> filter(List<Double> inputSignal) {
-        // Konvertáljuk az adatot tömbbé a könnyebb kezelés érdekében
+        // Convert input to array for easier processing
         int n = inputSignal.size();
         double[] signal = new double[n];
         for (int i = 0; i < n; i++) {
             signal[i] = inputSignal.get(i);
         }
-        
-        // Kiegészítés a legközelebbi 2^m méretűre (ha szükséges)
+
+        // Pad signal to the nearest power of 2, if needed
         int powerOfTwo = 1;
         while (powerOfTwo < n) {
             powerOfTwo *= 2;
         }
-        
+
         double[] paddedSignal = new double[powerOfTwo];
         System.arraycopy(signal, 0, paddedSignal, 0, n);
         for (int i = n; i < powerOfTwo; i++) {
-            paddedSignal[i] = signal[n - 1]; // Ismételjük az utolsó értéket
+            paddedSignal[i] = signal[n - 1]; // Repeat last value
         }
-        
-        // Haar wavelet transzformáció
+
+        // Haar wavelet transform
         double[] transformed = discreteWaveletTransform(paddedSignal, level);
-        
-        // Küszöbölés a zaj eltávolításához
+
+        // Thresholding to remove noise
         thresholdCoefficients(transformed, threshold);
-        
-        // Inverz wavelet transzformáció
+
+        // Inverse wavelet transform
         double[] filtered = inverseWaveletTransform(transformed, level);
-        
-        // Konvertáljuk vissza a szűrt jelet
+
+        // Convert back to list
         List<Double> filteredSignal = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             filteredSignal.add(filtered[i]);
         }
-        
+
         return filteredSignal;
     }
-    
+
     /**
-     * Elvégzi a diszkrét wavelet transzformációt (Haar wavelet)
+     * Performs discrete wavelet transform (Haar wavelet)
      */
     private double[] discreteWaveletTransform(double[] signal, int levels) {
         int n = signal.length;
         double[] transformed = Arrays.copyOf(signal, n);
-        
+
         for (int level = 0; level < levels; level++) {
             int levelSize = n >> level;
             int halfSize = levelSize >> 1;
-            
+
             for (int i = 0; i < halfSize; i++) {
                 int idx = i << 1;
                 double avg = (transformed[idx] + transformed[idx + 1]) / Math.sqrt(2);
                 double diff = (transformed[idx] - transformed[idx + 1]) / Math.sqrt(2);
-                
+
                 transformed[i] = avg;
                 transformed[i + halfSize] = diff;
             }
-            
-            // Másoljuk az átlagokat és különbségeket a megfelelő helyre
+
+            // Copy averages and details back to the correct position
             double[] temp = Arrays.copyOf(transformed, levelSize);
             System.arraycopy(temp, 0, transformed, 0, levelSize);
         }
-        
+
         return transformed;
     }
-    
+
     /**
-     * Küszöböli a wavelet együtthatókat a zaj eltávolításához
+     * Applies thresholding to the wavelet coefficients for noise removal
      */
     private void thresholdCoefficients(double[] transformed, double threshold) {
         for (int i = 0; i < transformed.length; i++) {
@@ -107,32 +106,32 @@ public class WaveletFilter {
             }
         }
     }
-    
+
     /**
-     * Elvégzi az inverz wavelet transzformációt (Haar wavelet)
+     * Performs inverse wavelet transform (Haar wavelet)
      */
     private double[] inverseWaveletTransform(double[] transformed, int levels) {
         int n = transformed.length;
         double[] signal = Arrays.copyOf(transformed, n);
-        
+
         for (int level = levels - 1; level >= 0; level--) {
             int levelSize = n >> level;
             int halfSize = levelSize >> 1;
-            
-            // Ideiglenes másolat
+
+            // Temporary copy
             double[] temp = Arrays.copyOf(signal, levelSize);
-            
+
             for (int i = 0; i < halfSize; i++) {
                 int j = i << 1;
-                
+
                 double avg = temp[i];
                 double diff = temp[i + halfSize];
-                
+
                 signal[j] = (avg + diff) / Math.sqrt(2);
                 signal[j + 1] = (avg - diff) / Math.sqrt(2);
             }
         }
-        
+
         return signal;
     }
 }

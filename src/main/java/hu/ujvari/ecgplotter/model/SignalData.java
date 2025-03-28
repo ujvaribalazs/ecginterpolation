@@ -62,7 +62,7 @@ public class SignalData {
     
     public Map<String, List<Double>> getAllFilteredSignals() {
         synchronized(lock) {
-            // Másolatot készítünk a Map-ről, hogy biztonságos legyen
+            // We make a copy of the Map to keep it safe
             return new HashMap<>(filteredSignals);
         }
     }

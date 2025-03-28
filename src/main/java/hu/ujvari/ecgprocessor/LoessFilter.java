@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lokálisan súlyozott regressziós szűrő (LOESS/LOWESS)
- * Lokális approximációt használ a jel simításához, jól megőrizve a csúcsokat
+ * Locally Weighted Regression Filter (LOESS/LOWESS)
+ * Uses local approximation for signal smoothing, preserving peaks effectively.
  */
 public class LoessFilter {
     private int windowSize;
@@ -13,10 +13,10 @@ public class LoessFilter {
     private double bandwidth;
 
     /**
-     * LOESS szűrő inicializálása
-     * @param windowSize A lokális ablak mérete
-     * @param polynomialOrder A polinom fokszáma (általában 1 vagy 2)
-     * @param bandwidth A sávszélesség paraméter (0-1 között), ami a lokális súlyozást befolyásolja
+     * Initializes a LOESS filter
+     * @param windowSize The size of the local window
+     * @param polynomialOrder The degree of the polynomial (typically 1 or 2)
+     * @param bandwidth The bandwidth parameter (between 0 and 1), controlling local weighting
      */
     public LoessFilter(int windowSize, int polynomialOrder, double bandwidth) {
         this.windowSize = windowSize;
@@ -25,22 +25,22 @@ public class LoessFilter {
     }
 
     /**
-     * Alkalmazzon LOESS szűrést a bemeneti jelre
-     * @param inputSignal A bemeneti jel
-     * @return A szűrt jel
+     * Apply LOESS filtering to the input signal
+     * @param inputSignal The input signal
+     * @return The filtered signal
      */
     public List<Double> filter(List<Double> inputSignal) {
         List<Double> filteredSignal = new ArrayList<>(inputSignal.size());
         int n = inputSignal.size();
         
-        // Minden pontra elvégezzük a lokális regressziót
+        // Perform local regression for each point
         for (int i = 0; i < n; i++) {
-            // Határozzuk meg a lokális ablakot
+            // Determine the local window
             int halfWindow = windowSize / 2;
             int startIdx = Math.max(0, i - halfWindow);
             int endIdx = Math.min(n - 1, i + halfWindow);
             
-            // Gyűjtsük össze a pontokat az ablakban
+            // Collect the points within the window
             List<Double> x = new ArrayList<>();
             List<Double> y = new ArrayList<>();
             
@@ -49,13 +49,13 @@ public class LoessFilter {
                 y.add(inputSignal.get(j));
             }
             
-            // Számítsuk ki a távolságalapú súlyokat
+            // Calculate distance-based weights
             List<Double> weights = calculateWeights(x, i, bandwidth);
             
-            // Végezzük el a súlyozott polinom illesztést
+            // Perform weighted polynomial fitting
             double[] coeffs = fitPolynomial(x, y, weights, polynomialOrder);
             
-            // Számítsuk ki az illesztett értéket az i. pontban
+            // Evaluate the fitted value at point i
             double fittedValue = evaluatePolynomial(coeffs, i);
             filteredSignal.add(fittedValue);
         }
@@ -64,13 +64,13 @@ public class LoessFilter {
     }
     
     /**
-     * Távolságalapú súlyok kiszámítása a LOESS-hez
+     * Calculate distance-based weights for LOESS
      */
     private List<Double> calculateWeights(List<Double> x, int center, double bandwidth) {
         List<Double> weights = new ArrayList<>(x.size());
         double maxDist = 0;
         
-        // Találjuk meg a legnagyobb távolságot
+        // Find the maximum distance
         for (Double point : x) {
             double dist = Math.abs(point - center);
             if (dist > maxDist) {
@@ -78,7 +78,7 @@ public class LoessFilter {
             }
         }
         
-        // Számítsuk ki a súlyokat a tricube kernellel
+        // Compute weights using the tricube kernel
         for (Double point : x) {
             double dist = Math.abs(point - center) / (maxDist * bandwidth);
             if (dist > 1) {
@@ -94,21 +94,21 @@ public class LoessFilter {
     }
     
     /**
-     * Súlyozott polinom illesztés a legkisebb négyzetek módszerével
+     * Weighted polynomial fitting using least squares
      */
     private double[] fitPolynomial(List<Double> x, List<Double> y, List<Double> weights, int degree) {
-        // Egyszerűsített megvalósítás: lineáris regresszió (degree=1)
-        // Valódi implementációban használjunk mátrix műveleteket a magasabb fokú polinomokhoz
+        // Simplified implementation: linear regression (degree = 1)
+        // For higher degree polynomials, proper matrix operations should be used
         if (degree == 1) {
             return fitLinear(x, y, weights);
         } else {
-            // Egyszerűsített megközelítés a magasabb fokú polinomokhoz
+            // Simplified approach for higher degree polynomials
             return fitLinearApproximation(x, y, weights);
         }
     }
     
     /**
-     * Lineáris illesztés (fokszám = 1)
+     * Linear fitting (degree = 1)
      */
     private double[] fitLinear(List<Double> x, List<Double> y, List<Double> weights) {
         int n = x.size();
@@ -136,15 +136,15 @@ public class LoessFilter {
     }
     
     /**
-     * Egyszerűsített megközelítés magasabb fokú polinomokhoz
+     * Simplified approach for higher-order polynomial fitting
      */
     private double[] fitLinearApproximation(List<Double> x, List<Double> y, List<Double> weights) {
-        // Egyszerűsített megközelítés - csak lineáris approximáció
+        // Simplified approach - only linear approximation
         return fitLinear(x, y, weights);
     }
     
     /**
-     * Polinom kiértékelése egy adott pontban
+     * Evaluate a polynomial at a given point
      */
     private double evaluatePolynomial(double[] coeffs, double x) {
         double result = 0;
@@ -154,5 +154,3 @@ public class LoessFilter {
         return result;
     }
 }
-
-

@@ -8,7 +8,7 @@ public class SplineFilter implements FilterInterface {
     private FilterParameters.SplineParameters parameters;
     
     public SplineFilter() {
-        // Alapértelmezett paraméter
+        // Default parameter
         this(20);
     }
     

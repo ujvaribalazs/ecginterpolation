@@ -61,7 +61,7 @@ public abstract class FilterParameters {
         private double bandwidth;
         
         public LoessParameters(int windowSize, int polynomialOrder, double bandwidth) {
-            super("LOESS");
+            super("Loess");
             this.windowSize = windowSize;
             this.polynomialOrder = polynomialOrder;
             this.bandwidth = bandwidth;
@@ -106,10 +106,8 @@ public abstract class FilterParameters {
         public void setThreshold(double threshold) { this.threshold = threshold; }
     }
 
-   
-
     /**
-     * A szegmentált szűrő paramétereit tartalmazó belső osztály
+     * Inner class that holds the parameters of the segmented filter
      */
     public static class SegmentFilterParameters extends FilterParameters {
         private String baseFilterName;
@@ -117,14 +115,14 @@ public abstract class FilterParameters {
         private FilterParameters baseFilterParameters;
 
         /**
-         * Paraméteres konstruktor
-         * @param baseFilterName Az alapszűrő neve
-         * @param rPeakThreshold Az R csúcs küszöbérték (0.0-1.0 között)
-         * @param baseFilterParameters Az alapszűrő paraméterei
+         * Parameterized constructor
+         * @param baseFilterName Name of the base filter
+         * @param rPeakThreshold Threshold value for R peak detection (between 0.0 and 1.0)
+         * @param baseFilterParameters Parameters of the base filter
          */
         public SegmentFilterParameters(String baseFilterName, double rPeakThreshold, 
                                 FilterParameters baseFilterParameters) {
-            super("Segmented" + baseFilterName); // Meghívjuk a szülő konstruktorát
+            super("Segmented" + baseFilterName); // Call parent constructor
             this.baseFilterName = baseFilterName;
             this.rPeakThreshold = rPeakThreshold;
             this.baseFilterParameters = baseFilterParameters;
@@ -163,5 +161,4 @@ public abstract class FilterParameters {
                 '}';
         }
     }
-    
 }

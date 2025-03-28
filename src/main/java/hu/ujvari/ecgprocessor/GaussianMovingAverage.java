@@ -19,7 +19,7 @@ public class GaussianMovingAverage {
     private double[] generateGaussianWeights(int size) {
         double[] w = new double[size];
         int mid = size / 2;
-        double sigma = size / 6.0; // szabály: 3σ ≈ fél ablak
+        double sigma = size / 6.0; // rule: 3σ ≈ half window
 
         double sum = 0;
         for (int i = 0; i < size; i++) {
@@ -28,7 +28,7 @@ public class GaussianMovingAverage {
             sum += w[i];
         }
 
-        // normálás (összeg = 1)
+        // normalizing
         for (int i = 0; i < size; i++) {
             w[i] /= sum;
         }

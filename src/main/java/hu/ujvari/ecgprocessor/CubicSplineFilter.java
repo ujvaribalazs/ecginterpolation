@@ -3,32 +3,21 @@ package hu.ujvari.ecgprocessor;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Köbös spline interpolációs szűrő
- * Sima görbét illeszt az adatpontokra, megőrizve a jellegzetes pontokat
- */
 
 public class CubicSplineFilter {
     private int downsampling;
     
-    /**
-     * Köbös spline szűrő inicializálása
-     * @param downsampling A ritkítási tényező (hányadik pontot használjuk az interpolációhoz)
-     */
+   
     public CubicSplineFilter(int downsampling) {
         this.downsampling = downsampling;
     }
     
-    /**
-     * Alkalmazzon köbös spline interpolációt a bemeneti jelre
-     * @param inputSignal A bemeneti jel
-     * @return A szűrt jel
-     */
+   
     public List<Double> filter(List<Double> inputSignal) {
         List<Double> filteredSignal = new ArrayList<>(inputSignal.size());
         int n = inputSignal.size();
         
-        // Ritkítsuk az adatpontokat
+        // downsampling
         List<Double> xKnots = new ArrayList<>();
         List<Double> yKnots = new ArrayList<>();
         
@@ -37,20 +26,19 @@ public class CubicSplineFilter {
             yKnots.add(inputSignal.get(i));
         }
         
-        // Bizonyosodj meg róla, hogy az utolsó pont is benne van
+        // make sure that the final points are included
         if ((n - 1) % downsampling != 0) {
             xKnots.add((double) (n - 1));
             yKnots.add(inputSignal.get(n - 1));
         }
         
-        // Számítsuk ki a spline együtthatókat
         int numKnots = xKnots.size();
         double[] h = new double[numKnots - 1];
         for (int i = 0; i < numKnots - 1; i++) {
             h[i] = xKnots.get(i + 1) - xKnots.get(i);
         }
         
-        // Állítsuk össze a tridiagonális egyenletrendszert a második deriváltak kiszámításához
+        // Set up the tridiagonal system of equations to calculate the second derivative
         double[] alpha = new double[numKnots - 2];
         double[] beta = new double[numKnots - 2];
         double[] gamma = new double[numKnots - 2];
@@ -64,31 +52,29 @@ public class CubicSplineFilter {
                       (yKnots.get(i + 1) - yKnots.get(i)) / h[i];
         }
         
-        // Oldjuk meg a tridiagonális rendszert a második deriváltakra
         double[] z = solveTridiagonal(alpha, beta, gamma, delta);
         
-        // Adjunk nullákat a végekhez (természetes spline határfeltételek)
+        // Add zeros to the ends (natural spline boundary conditions)
         double[] z2 = new double[numKnots];
         z2[0] = 0;
         z2[numKnots - 1] = 0;
         System.arraycopy(z, 0, z2, 1, z.length);
         
-        // Számítsuk ki az eredeti felbontású jelet a spline egyenletekkel
+        // Calculate the signal using the spline equations
         for (int i = 0; i < n; i++) {
-            // Találjuk meg a megfelelő szakaszt
+            // Find the right section
             int section = 0;
             while (section < numKnots - 2 && i > xKnots.get(section + 1)) {
                 section++;
             }
             
-            // Spline együtthatók erre a szakaszra
             double x1 = xKnots.get(section);
             double x2 = xKnots.get(section + 1);
             double y1 = yKnots.get(section);
             double y2 = yKnots.get(section + 1);
             double h_i = h[section];
             
-            // Köbös spline interpoláció
+            // Interpolation
             double t = (i - x1) / h_i;
             double t1 = 1 - t;
             
@@ -103,7 +89,7 @@ public class CubicSplineFilter {
     }
     
     /**
-     * Tridiagonális egyenletrendszer megoldása a Thomas-algoritmussal
+     * Solving a system of tridiagonal equations with the Thomas algorithm
      */
     private double[] solveTridiagonal(double[] a, double[] b, double[] c, double[] d) {
         int n = d.length;

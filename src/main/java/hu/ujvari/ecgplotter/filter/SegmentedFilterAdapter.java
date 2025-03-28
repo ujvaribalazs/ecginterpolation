@@ -29,9 +29,9 @@ public class SegmentedFilterAdapter implements FilterInterface {
             return;
         }
         
-        this.originalSignal = new ArrayList<>(originalSignal); // Mély másolatot készítünk
-        this.peaksDetected = false; // R csúcsokat újra kell detektálni új jel esetén
-        this.lastDetectedPeaks.clear(); // Töröljük a korábbi R csúcsokat
+        this.originalSignal = new ArrayList<>(originalSignal); // Create deep copy
+        this.peaksDetected = false; // R peaks must be re-detected if signal changes
+        this.lastDetectedPeaks.clear(); // Clear previous R peaks
     }
     
     @Override
@@ -47,22 +47,22 @@ public class SegmentedFilterAdapter implements FilterInterface {
             throw new IllegalStateException("Original signal not set in SegmentedFilterAdapter!");
         }
 
-        // Ellenőrizzük, hogy az alapszűrő paraméterek naprakészek-e
+        // Check whether base filter parameters are up to date
         if (parameters.getBaseFilterParameters() != null) {
             baseFilter.setParameters(parameters.getBaseFilterParameters());
             System.out.println("[DEBUG] Updated base filter with parameters: " + parameters.getBaseFilterParameters());
         }
 
-        // Csak egyszer detektáljuk az R csúcsokat az eredeti jelen, és újrahasználjuk őket
+        // Detect R peaks only once and reuse them
         if (!peaksDetected) {
-            // Küszöbérték kiszámítása az eredeti jel maximumértéke alapján
+            // Calculate threshold based on maximum value of the signal
             double maxValue = originalSignal.stream().mapToDouble(v -> v).max().orElse(0.0);
             double actualThreshold = maxValue * parameters.getRPeakThreshold();
             
             System.out.println("[DEBUG] R peak detection called. Threshold: " + actualThreshold + 
                             ", Max value: " + maxValue);
             
-            // R csúcsok detektálása az eredeti jelen
+            // Detect R peaks on the original signal
             this.lastDetectedPeaks = ECGSegmenter.detectRPeaks(originalSignal, actualThreshold);
             System.out.println("[DEBUG] Detected " + lastDetectedPeaks.size() + " R peaks");
             peaksDetected = true;
@@ -70,14 +70,14 @@ public class SegmentedFilterAdapter implements FilterInterface {
             System.out.println("[DEBUG] Using " + lastDetectedPeaks.size() + " previously detected R peaks");
         }
 
-        // Alkalmazzuk a szegmentált szűrést az azonosított R csúcsokkal
+        // Apply segmented filtering based on detected R peaks
         SegmentationResult result = ECGSegmenter.applyFilterBySegments(
             signal,
             baseFilter::filter,
             lastDetectedPeaks
         );
 
-        // Frissítjük az R csúcsokat a szűrés után kapott új indexekkel
+        // Update R peaks with newly calculated indices
         this.lastDetectedPeaks = result.getRPeakIndices();
         
         return result.getFilteredSignal();
@@ -94,14 +94,14 @@ public class SegmentedFilterAdapter implements FilterInterface {
             FilterParameters.SegmentFilterParameters segmentParams = 
                 (FilterParameters.SegmentFilterParameters) parameters;
             
-            // Ellenőrizzük, változott-e a küszöbérték
+            // Check if threshold has changed
             if (this.parameters.getRPeakThreshold() != segmentParams.getRPeakThreshold()) {
-                peaksDetected = false; // Új küszöbérték esetén újra detektáljuk az R csúcsokat
+                peaksDetected = false; // Redetect R peaks if threshold changed
             }
             
             this.parameters = segmentParams;
             
-            // Az alapszűrő paramétereinek frissítése, ha nem null
+            // Update base filter parameters if not null
             if (segmentParams.getBaseFilterParameters() != null) {
                 this.baseFilter.setParameters(segmentParams.getBaseFilterParameters());
             }
@@ -110,12 +110,12 @@ public class SegmentedFilterAdapter implements FilterInterface {
         }
     }
     
-    // Getter a detektált R csúcsokhoz
+    // Getter for the detected R peaks
     public List<Integer> getLastDetectedPeaks() {
-        return new ArrayList<>(lastDetectedPeaks); // Védő másolatot adunk vissza
+        return new ArrayList<>(lastDetectedPeaks);
     }
     
-    // Getter az alapszűrőhöz
+    // Getter for the base filter
     public FilterInterface getBaseFilter() {
         return baseFilter;
     }

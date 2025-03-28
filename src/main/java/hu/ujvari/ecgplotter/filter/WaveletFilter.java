@@ -8,7 +8,7 @@ public class WaveletFilter implements FilterInterface {
     private FilterParameters.WaveletParameters parameters;
     
     public WaveletFilter() {
-        // Alapértelmezett paraméterek
+        // Default parameters
         this(3, 0.1);
     }
     

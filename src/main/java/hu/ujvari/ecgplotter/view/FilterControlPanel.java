@@ -70,7 +70,7 @@ public class FilterControlPanel extends TabPane {
         pane.setPadding(new Insets(10));
         
         Label windowLabel = new Label("Window Size:");
-        Spinner<Integer> windowSpinner = new Spinner<>(5, 51, 11, 2);
+        Spinner<Integer> windowSpinner = new Spinner<>(5, 101, 11, 2);
         windowSpinner.setEditable(true);
         windowSpinner.setPrefWidth(80);
         
@@ -119,7 +119,7 @@ public class FilterControlPanel extends TabPane {
         windowSpinner.setPrefWidth(80);
         
         Label orderLabel = new Label("Polynomial Order:");
-        Spinner<Integer> orderSpinner = new Spinner<>(1, 3, 2, 1);
+        Spinner<Integer> orderSpinner = new Spinner<>(1, 1, 1, 1);
         orderSpinner.setEditable(true);
         orderSpinner.setPrefWidth(80);
         
@@ -137,20 +137,20 @@ public class FilterControlPanel extends TabPane {
                 bandwidthSpinner.getValue()
             );
 
-        filterController.updateFilterParameters("LOESS", loessParams);
+        filterController.updateFilterParameters("Loess", loessParams);
 
-        // Frissítjük a SegmentedLOESS paramétereit is!
+        // We also update the parameters of SegmentedLOESS!
         FilterParameters.SegmentFilterParameters segmentedParams =
             new FilterParameters.SegmentFilterParameters(
-                "LOESS",
-                0.7, // vagy használj egy külön spinnert, ha szeretnél állítható küszöböt
+                "Loess",
+                0.7,
                 loessParams
             );
         filterController.updateFilterParameters("SegmentedLoess", segmentedParams);
 
-        // Mindkét filter újraszámolása
+        // Recalculate both filters
         CompletableFuture.allOf(
-            filterController.applyFilter("LOESS"),
+            filterController.applyFilter("Loess"),
             filterController.applyFilter("SegmentedLoess")
         ).thenRun(() -> {
             Platform.runLater(() -> {
@@ -168,8 +168,8 @@ public class FilterControlPanel extends TabPane {
         pane.add(bandwidthSpinner, 1, 2);
         pane.add(applyButton, 0, 3, 2, 1);
         
-        Tab tab = new Tab("LOESS", pane);
-        filterTabs.put("LOESS", tab);
+        Tab tab = new Tab("Loess", pane);
+        filterTabs.put("Loess", tab);
         getTabs().add(tab);
     }
     
@@ -187,21 +187,21 @@ public class FilterControlPanel extends TabPane {
         
         Button applyButton = new Button("Apply");
         applyButton.setOnAction(e -> {
-            // Alapszűrő paraméterei
+            // Basefilter parameters
             FilterParameters.SplineParameters splineParams = 
                 new FilterParameters.SplineParameters(downsamplingSpinner.getValue());
             filterController.updateFilterParameters("Spline", splineParams);
         
-            // Szegmentált szűrő paraméterei
+            // Segmented parameters
             FilterParameters.SegmentFilterParameters segmentedParams =
                 new FilterParameters.SegmentFilterParameters(
                     "Spline",
-                    0.7, // lehet külön Spinner is, ha szeretnéd
+                    0.7,
                     splineParams
                 );
             filterController.updateFilterParameters("SegmentedSpline", segmentedParams);
         
-            // Mindkét szűrő újraszámolása
+            // Recalculate both filters
             CompletableFuture.allOf(
                 filterController.applyFilter("Spline"),
                 filterController.applyFilter("SegmentedSpline")
@@ -262,14 +262,14 @@ public class FilterControlPanel extends TabPane {
         getTabs().add(tab);
     }
 
-    // Új metódus a szegmentált szűrő fül létrehozásához
+    
     public void addSegmentedFilterTab(String baseFilterName, String segmentedFilterName) {
         GridPane pane = new GridPane();
         pane.setHgap(10);
         pane.setVgap(10);
         pane.setPadding(new Insets(10));
         
-        // A Spinner 0.0 és 1.0 között mozog, ami 0% és 100% közötti arányt jelent
+        
         Label thresholdLabel = new Label("R Peak Threshold (% of max):");
         Spinner<Double> thresholdSpinner = new Spinner<>(0.3, 0.95, 0.7, 0.05);
         thresholdSpinner.setEditable(true);
@@ -277,27 +277,26 @@ public class FilterControlPanel extends TabPane {
         
         Button applyButton = new Button("Apply");
         applyButton.setOnAction(e -> {
-            // Létrehozzuk a szegmentált paramétereket
+            
             FilterParameters.SegmentFilterParameters params = 
                 new FilterParameters.SegmentFilterParameters(
                     baseFilterName,
                     thresholdSpinner.getValue(),
-                    null  // A null paramétert az adapter kezeli
+                    null  
                 );
             
-            // Frissítjük a paramétereket és alkalmazzuk a szűrőt
+            
             filterController.updateFilterParameters(segmentedFilterName, params);
             filterController.applyFilter(segmentedFilterName).thenRun(() -> {
                 Platform.runLater(() -> {
-                    // Lekérdezzük a detektált csúcsok számát
+                    // Query the number of detected peaks
                     SegmentedFilterAdapter filter = 
                         (SegmentedFilterAdapter) filterController.getFilter(segmentedFilterName);
                     int peakCount = filter.getLastDetectedPeaks().size();
                     
-                    // Opcionálisan frissítsd a státuszt (ha van statusPanel)
+                    
                     // statusPanel.updateStatus("Detected " + peakCount + " R peaks", 1);
                     
-                    // Frissítjük a grafikont
                     signalCanvas.redrawChart();
                 });
             });
@@ -322,10 +321,10 @@ public class FilterControlPanel extends TabPane {
         addLoessTab();
         addSplineTab();
         //addWaveletTab();
-         // Szegmentált szűrő fülek
+         
         addSegmentedFilterTab("SavitzkyGolay", "SegmentedSavitzkyGolay");
         addSegmentedFilterTab("Gaussian", "SegmentedGaussian");
-        addSegmentedFilterTab("LOESS", "SegmentedLoess");
+        addSegmentedFilterTab("Loess", "SegmentedLoess");
     }
     
     public void selectTab(String filterName) {

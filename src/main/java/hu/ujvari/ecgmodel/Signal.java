@@ -25,7 +25,7 @@ public class Signal {
         this.scaleUnit = scaleUnit;
     }
 
-    // Getters (egyelőre csak olvasáshoz)
+    // Getters
     public String getLeadName() {
         return leadName;
     }
@@ -50,7 +50,6 @@ public class Signal {
         return scaleUnit;
     }
 
-    // (Opcionálisan toString, ha szeretnéd később kiírni)
     @Override
     public String toString() {
         return "Signal{" +

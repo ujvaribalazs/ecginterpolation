@@ -474,7 +474,7 @@ public class CanvasEcgPlotter extends Application {
     private void processData() {
         updateStatus("Adatok feldolgozása...", 0);
         
-        // Ha még nincs adat, nincs mit feldolgozni
+        
         if (signal == null || signal.isEmpty()) {
             updateStatus("Hiba: Nincsenek adatok!", 0);
             return;
@@ -670,7 +670,7 @@ public class CanvasEcgPlotter extends Application {
                     ", polinom fok = " + loessPolynomialOrder + 
                     ", sávszélesség = " + loessBandwidth, 1);
             
-            // Jelöljük be a LOESS CheckBox-ot, ha még nincs bejelölve
+            
             if (!filterEnabled.get("LOESS")) {
                 filterEnabled.put("LOESS", true);
                 Platform.runLater(() -> redrawChart());
@@ -729,7 +729,7 @@ public class CanvasEcgPlotter extends Application {
             redrawChart();
             updateStatus("Köbös spline szűrő paraméterei frissítve: ritkítás = " + splineDownsampling, 1);
             
-            // Jelöljük be a Spline CheckBox-ot, ha még nincs bejelölve
+           
             if (!filterEnabled.get("Spline")) {
                 filterEnabled.put("Spline", true);
                 Platform.runLater(() -> redrawChart());
@@ -774,7 +774,7 @@ public class CanvasEcgPlotter extends Application {
             updateStatus("Wavelet szűrő paraméterei frissítve: szint = " + waveletLevel + 
                      ", küszöbérték = " + waveletThreshold, 1);
             
-            // Jelöljük be a Wavelet CheckBox-ot, ha még nincs bejelölve
+            
             if (!filterEnabled.get("Wavelet")) {
                 filterEnabled.put("Wavelet", true);
                 Platform.runLater(() -> redrawChart());
@@ -833,12 +833,12 @@ public class CanvasEcgPlotter extends Application {
     }
     
     private void redrawChart() {
-        // Ha még nincsenek feldolgozott adatok, nincs mit rajzolni
+        
         if (signal == null || signal.isEmpty() || gaussFiltered == null || sgFiltered == null) {
             return;
         }
         
-        // Canvas törlése
+       
         clearCanvas();
         
         // Viewport méretének beállítása a zoom alapján
@@ -866,7 +866,7 @@ public class CanvasEcgPlotter extends Application {
         // Pontok rajzolása
         int pointCount = viewEndIdx - viewStartIdx + 1;
         
-        // Ha túl sok pont van, csak minden n-ediket rajzoljuk, hogy javítsuk a teljesítményt
+        
         int skipFactor = Math.max(1, pointCount / 1000);
         
         // Rajzoláshoz használt értékek (gyorsítótárazás)
@@ -910,7 +910,7 @@ public class CanvasEcgPlotter extends Application {
     
     private void drawSignal(String signalName, List<Double> data, int skipFactor, 
                            double padding, double height, double xScale, double yScale) {
-        // Csak akkor rajzoljuk, ha engedélyezve van
+        
         if (!filterEnabled.getOrDefault(signalName, false)) {
             return;
         }
@@ -948,7 +948,7 @@ public class CanvasEcgPlotter extends Application {
         });
     }
     
-    // Főprogram indításához
+    
     public static void main(String[] args) {
         launch(args);
     }

@@ -70,7 +70,7 @@ public class XmlEcgReader {
     
         Element root = this.xmlDocument.getDocumentElement();
         System.out.println("<" + root.getNodeName() + ">");
-        printElementStructure(root, 1, false);  // majd ezt írjuk meg később
+        printElementStructure(root, 1, false);
     }
     
     private void printElementStructure(Element element, int depth, boolean printAttributes) {
@@ -126,7 +126,7 @@ public class XmlEcgReader {
             return;
         }
     
-        Set<String> leads = new TreeSet<>();  // duplikáció nélkül, rendezve
+        Set<String> leads = new TreeSet<>();
     
         for (Element component : findLeadComponents()) {
             NodeList codeList = component.getElementsByTagName("code");
@@ -152,35 +152,32 @@ public class XmlEcgReader {
             return;
         }
     
-        this.signals.clear(); // előző jelek törlése
+        this.signals.clear();
     
         List<Element> leadComponents = findLeadComponents();
     
         for (Element component : leadComponents) {
-            // 1. <code> elem a lead azonosításához
+            
             NodeList codeList = component.getElementsByTagName("code");
             if (codeList.getLength() == 0) continue;
             String leadName = ((Element) codeList.item(0)).getAttribute("code");
     
-            // 2. <value> elem megkeresése
+            
             Element valueElement = (Element) component.getElementsByTagName("value").item(0);
             if (valueElement == null) continue;
     
-            // 3. <origin>, <scale>, <digits> elemek
             Element originElement = (Element) valueElement.getElementsByTagName("origin").item(0);
             Element scaleElement = (Element) valueElement.getElementsByTagName("scale").item(0);
             Element digitsElement = (Element) valueElement.getElementsByTagName("digits").item(0);
     
             if (originElement == null || scaleElement == null || digitsElement == null) continue;
     
-            // 4. Értékek kinyerése
             double originVal = Double.parseDouble(originElement.getAttribute("value"));
             String originUnit = originElement.getAttribute("unit");
     
             double scaleVal = Double.parseDouble(scaleElement.getAttribute("value"));
             String scaleUnit = scaleElement.getAttribute("unit");
     
-            // 5. digits szövegből számok listává alakítása
             String digitsText = digitsElement.getTextContent().trim();
             List<Double> values = new ArrayList<>();
             for (String token : digitsText.split("\\s+")) {
@@ -189,7 +186,6 @@ public class XmlEcgReader {
                 } catch (NumberFormatException ignored) {}
             }
     
-            // 6. Signal példány létrehozása és eltárolása
             Signal signal = new Signal(leadName, values, originVal, originUnit, scaleVal, scaleUnit);
             this.signals.add(signal);
         }
