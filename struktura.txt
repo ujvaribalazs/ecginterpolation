@@ -1,6 +1,7 @@
 Folder PATH listing
 Volume serial number is CEC0-3329
 C:.
+³   .gitignore
 ³   pom.xml
 ³   struktura.txt
 ³   
@@ -15,11 +16,6 @@ C:.
 ³   ³   ³           ³       Signal.java
 ³   ³   ³           ³       
 ³   ³   ³           ÃÄÄÄecgplotter
-³   ³   ³           ³   ³   CanvasEcgPlotter.java
-³   ³   ³           ³   ³   EcgPlotter.java
-³   ³   ³           ³   ³   EcgPlotterApplication.java
-³   ³   ³           ³   ³   FastEcgPlotter.java
-³   ³   ³           ³   ³   
 ³   ³   ³           ³   ÃÄÄÄcontroller
 ³   ³   ³           ³   ³       FilterController.java
 ³   ³   ³           ³   ³       ViewController.java
@@ -36,6 +32,12 @@ C:.
 ³   ³   ³           ³   ÃÄÄÄmodel
 ³   ³   ³           ³   ³       FilterParameters.java
 ³   ³   ³           ³   ³       SignalData.java
+³   ³   ³           ³   ³       
+³   ³   ³           ³   ÃÄÄÄunused
+³   ³   ³           ³   ³       CanvasEcgPlotter.java
+³   ³   ³           ³   ³       EcgPlotter.java
+³   ³   ³           ³   ³       EcgPlotterApplication.java
+³   ³   ³           ³   ³       FastEcgPlotter.java
 ³   ³   ³           ³   ³       
 ³   ³   ³           ³   ÀÄÄÄview
 ³   ³   ³           ³           FilterControlPanel.java
@@ -77,14 +79,6 @@ C:.
     ³   ³       ³       Signal.class
     ³   ³       ³       
     ³   ³       ÃÄÄÄecgplotter
-    ³   ³       ³   ³   CanvasEcgPlotter$1.class
-    ³   ³       ³   ³   CanvasEcgPlotter$2.class
-    ³   ³       ³   ³   CanvasEcgPlotter$3.class
-    ³   ³       ³   ³   CanvasEcgPlotter$4.class
-    ³   ³       ³   ³   CanvasEcgPlotter$5.class
-    ³   ³       ³   ³   CanvasEcgPlotter$6.class
-    ³   ³       ³   ³   CanvasEcgPlotter.class
-    ³   ³       ³   ³   EcgPlotter.class
     ³   ³       ³   ³   EcgPlotterApplication.class
     ³   ³       ³   ³   FastEcgPlotter$1.class
     ³   ³       ³   ³   FastEcgPlotter$2.class
@@ -112,6 +106,20 @@ C:.
     ³   ³       ³   ³       FilterParameters$WaveletParameters.class
     ³   ³       ³   ³       FilterParameters.class
     ³   ³       ³   ³       SignalData.class
+    ³   ³       ³   ³       
+    ³   ³       ³   ÃÄÄÄunused
+    ³   ³       ³   ³       CanvasEcgPlotter$1.class
+    ³   ³       ³   ³       CanvasEcgPlotter$2.class
+    ³   ³       ³   ³       CanvasEcgPlotter$3.class
+    ³   ³       ³   ³       CanvasEcgPlotter$4.class
+    ³   ³       ³   ³       CanvasEcgPlotter$5.class
+    ³   ³       ³   ³       CanvasEcgPlotter$6.class
+    ³   ³       ³   ³       CanvasEcgPlotter.class
+    ³   ³       ³   ³       EcgPlotter.class
+    ³   ³       ³   ³       EcgPlotterApplication.class
+    ³   ³       ³   ³       FastEcgPlotter$1.class
+    ³   ³       ³   ³       FastEcgPlotter$2.class
+    ³   ³       ³   ³       FastEcgPlotter.class
     ³   ³       ³   ³       
     ³   ³       ³   ÀÄÄÄview
     ³   ³       ³           FilterControlPanel.class
@@ -163,3 +171,7 @@ C:.
     ³                   inputFiles.lst
     ³                   
     ÀÄÄÄtest-classes
+        ÀÄÄÄhu
+            ÀÄÄÄujvari
+                    AppTest.class
+                    
