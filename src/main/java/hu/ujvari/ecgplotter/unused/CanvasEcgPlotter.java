@@ -1,4 +1,4 @@
-package hu.ujvari.ecgplotter;
+package hu.ujvari.ecgplotter.unused;
 
 import java.util.ArrayList;
 import java.util.HashMap;

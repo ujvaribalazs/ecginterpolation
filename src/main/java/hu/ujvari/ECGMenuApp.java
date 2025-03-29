@@ -5,7 +5,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 import hu.ujvari.ecgmodel.Signal;
-import hu.ujvari.ecgplotter.EcgPlotterApplication;
+import hu.ujvari.ecgplotter.unused.EcgPlotterApplication;
 import hu.ujvari.ecgreader.XmlEcgReader;
 import javafx.application.Application;
 import javafx.application.Platform;
