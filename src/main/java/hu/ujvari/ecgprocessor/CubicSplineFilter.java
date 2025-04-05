@@ -9,6 +9,10 @@ public class CubicSplineFilter {
     
    
     public CubicSplineFilter(int downsampling) {
+        // Security check: downsampling must be min 2
+        if (downsampling < 2) {
+            throw new IllegalArgumentException("Downsampling must be at least 2");
+        }
         this.downsampling = downsampling;
     }
     
@@ -16,6 +20,21 @@ public class CubicSplineFilter {
     public List<Double> filter(List<Double> inputSignal) {
         List<Double> filteredSignal = new ArrayList<>(inputSignal.size());
         int n = inputSignal.size();
+        System.out.println("CubicSplineFilter, a jel hossza:" + n);
+        
+        // Biztonsági korrekció: ha túl nagy a downsampling, automatikusan korrigáljuk
+        int effectiveDownsampling = downsampling;
+        int minKnots = 3; // Minimum szükséges csomópontok száma
+        
+        // Ellenőrizzük, hogy a jelenlegi downsampling mellett lesz-e elég csomópont
+        if (n / effectiveDownsampling < minKnots) {
+            // Számoljuk ki a legnagyobb megengedett downsampling értéket
+            effectiveDownsampling = Math.max(2, n / minKnots);
+            System.out.println("[WARNING] Downsampling (" + downsampling + 
+                               ") too large for signal length. Adjusted to: " + 
+                               effectiveDownsampling);
+        }
+        
         
         // downsampling
         List<Double> xKnots = new ArrayList<>();
@@ -33,10 +52,12 @@ public class CubicSplineFilter {
         }
         
         int numKnots = xKnots.size();
+        System.out.println("Csomópontok száma (numKnots): " + numKnots);
         double[] h = new double[numKnots - 1];
         for (int i = 0; i < numKnots - 1; i++) {
             h[i] = xKnots.get(i + 1) - xKnots.get(i);
         }
+        System.out.println("h tömb mérete: " + h.length);
         
         // Set up the tridiagonal system of equations to calculate the second derivative
         double[] alpha = new double[numKnots - 2];
@@ -51,8 +72,10 @@ public class CubicSplineFilter {
             delta[i] = (yKnots.get(i + 2) - yKnots.get(i + 1)) / h[i + 1] -
                       (yKnots.get(i + 1) - yKnots.get(i)) / h[i];
         }
+        System.out.println("Tridiagonális tömbök mérete: " + alpha.length);
         
         double[] z = solveTridiagonal(alpha, beta, gamma, delta);
+        System.out.println("Tridiagonális megoldás után, z mérete: " + z.length);
         
         // Add zeros to the ends (natural spline boundary conditions)
         double[] z2 = new double[numKnots];

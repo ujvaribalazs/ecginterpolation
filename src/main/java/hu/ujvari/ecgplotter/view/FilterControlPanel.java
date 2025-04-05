@@ -180,18 +180,25 @@ public class FilterControlPanel extends TabPane {
         pane.setPadding(new Insets(10));
         
         Label downsamplingLabel = new Label("Downsampling Factor:");
-        Spinner<Integer> downsamplingSpinner = new Spinner<>(2, 100, 20, 1);
+        Spinner<Integer> downsamplingSpinner = new Spinner<>(2, 50, 20, 1);
         downsamplingSpinner.setEditable(true);
         downsamplingSpinner.setPrefWidth(80);
         
         
         Button applyButton = new Button("Apply");
         applyButton.setOnAction(e -> {
+            int spinnerValue = downsamplingSpinner.getValue();
+            System.out.println("Spinner értéke kattintáskor: " + spinnerValue);
+            
             // Basefilter parameters
             FilterParameters.SplineParameters splineParams = 
-                new FilterParameters.SplineParameters(downsamplingSpinner.getValue());
+                new FilterParameters.SplineParameters(spinnerValue);
+            
+            System.out.println("SplineParameters létrehozva: " + splineParams.getDownsampling());
+            
             filterController.updateFilterParameters("Spline", splineParams);
-        
+            System.out.println("Paraméterek frissítve");
+            
             // Segmented parameters
             FilterParameters.SegmentFilterParameters segmentedParams =
                 new FilterParameters.SegmentFilterParameters(
@@ -200,13 +207,17 @@ public class FilterControlPanel extends TabPane {
                     splineParams
                 );
             filterController.updateFilterParameters("SegmentedSpline", segmentedParams);
-        
+            
             // Recalculate both filters
             CompletableFuture.allOf(
                 filterController.applyFilter("Spline"),
                 filterController.applyFilter("SegmentedSpline")
             ).thenRun(() -> {
-                Platform.runLater(() -> signalCanvas.redrawChart());
+                Platform.runLater(() -> {
+                    System.out.println("Szűrő futtatása után: " + ((FilterParameters.SplineParameters)
+                        filterController.getFilterParameters("Spline")).getDownsampling());
+                    signalCanvas.redrawChart();
+                });
             });
         });
         

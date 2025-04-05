@@ -5,7 +5,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 import hu.ujvari.ecgmodel.Signal;
-import hu.ujvari.ecgplotter.unused.EcgPlotterApplication;
+import hu.ujvari.ecgplotter.app.EcgPlotterApplication;
 import hu.ujvari.ecgreader.XmlEcgReader;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -120,7 +120,7 @@ public class ECGMenuApp extends Application {
         try {
             XmlEcgReader reader = new XmlEcgReader();
             
-            reader.loadFromResource("xml/ecg1.xml");
+            reader.loadFromResource("xml/ecg3.xml");
             
             reader.extractSignals();
             

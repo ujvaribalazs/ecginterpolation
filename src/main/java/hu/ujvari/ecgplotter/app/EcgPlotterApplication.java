@@ -1,4 +1,4 @@
-package hu.ujvari.ecgplotter.unused;
+package hu.ujvari.ecgplotter.app;
 
 import java.util.ArrayList;
 import java.util.List;
