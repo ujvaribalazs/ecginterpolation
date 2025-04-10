@@ -38,6 +38,7 @@ Futtatás: mvn javafx:run
 
 Projekt felépítése
 
+```text
 ecginterpolation/
 ├── pom.xml
 ├── src/
@@ -46,6 +47,8 @@ ecginterpolation/
 │   └── test/java/...
 ├── .vscode/ (VSCode konfiguráció)
 └── .gitignore
+```
+
 
 Főosztály
 
